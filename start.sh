@@ -1,22 +1,24 @@
 #!/bin/bash
 
 # Navigate to the React app folder
-cd GUI
+cd GUI/react-app
 
 # Install React app dependencies
 npm install
 
 # Start the React app
-npm start &
+npm run dev &
 
 # Navigate to the Node.js app folder
-cd ../API
+cd ..
+cd ..
+cd API
 
 # Install Node.js app dependencies
 npm install
 
 # Start the Node.js app
-npm start &
+npm run start &
 
 # Return to the root folder
 cd ..
