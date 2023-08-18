@@ -143,7 +143,7 @@ function App() {
 
   function onUpdateFrequency(e:any){
     //send to api
-    fetch('http://localhost:3001/api/freq',{
+    fetch('http://pi.local:3001/api/freq',{
       method: 'POST',
       mode: 'cors',
       headers: {
