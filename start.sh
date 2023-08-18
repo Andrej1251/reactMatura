@@ -1,5 +1,5 @@
 #!/bin/bash
-
+killall -9 node
 # Navigate to the React app folder
 cd GUI/react-app
 
