@@ -49,8 +49,8 @@ connection.connect((err) => {
     // Create the first table
     const createLoraQuery = `
         CREATE TABLE lora (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            idLora INT UNIQUE
+            idLora INT PRIMARY KEY,
+            name VARCHAR(255) UNIQUE
         )
     `;
 
@@ -69,7 +69,7 @@ connection.connect((err) => {
             hum FLOAT,
             datetime DATETIME,
             humTempFK INT,
-            FOREIGN KEY (humTempFK) REFERENCES lora(id)
+            FOREIGN KEY (humTempFK) REFERENCES lora(idLora)
         )
     `;
 
@@ -123,10 +123,11 @@ app.post('/api/newID', (req, res) => {
         if(req.body.id!==""){
             //insert into table lora
             try{
-                const insertLoraQuery = `INSERT INTO lora (idLora) VALUES (${req.body.id})`;
+                const insertLoraQuery = `INSERT INTO lora (idLora,name) VALUES (${req.body.id},"${req.body.name}") ON DUPLICATE KEY UPDATE idLora=${req.body.id} AND name="${req.body.name}"`;
                 connection.query(insertLoraQuery, (err, result) => {
                     if (err) {
                         console.error('Error inserting new id:', err);
+                        res.status(500).json({data:'Failed to insert new id: '+err});
                     } else {
                         console.log(`New id inserted`);
                         res.status(200).json({data:'Updated id'});

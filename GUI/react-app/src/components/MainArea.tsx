@@ -1,7 +1,7 @@
 import {  Stage, Image, Layer } from 'react-konva';
 import Shape from './Shape';
 import { Button, Stack, Dropdown, Form } from 'react-bootstrap';
-import { useEffect} from 'react';
+import { useEffect, useState} from 'react';
 import useImage from 'use-image';
 
 interface Props {
@@ -21,7 +21,7 @@ const MainArea = ({trasparency,padding=10,radius,showModify,heightInPercent,poin
   
   useEffect(() => {setPointsData(pointsData)}, [pointsData,imageData]);
   function addData(){
-    setPointsData([...pointsData,{id:-1,color:'blue',points:[0,0,0,100,100,100,100,0]}]);
+    setPointsData([...pointsData,{id:-1,color:'blue',text:"null",points:[0,0,0,100,100,100,100,0]}]);
   };
   function removeData(){
     setPointsData(pointsData.slice(0,pointsData.length-1));
@@ -35,8 +35,12 @@ const MainArea = ({trasparency,padding=10,radius,showModify,heightInPercent,poin
     pointsData[modyfyPonts].points=[...pointsData[modyfyPonts].points,0,0]
     setPointsData([...pointsData]);
   };
-  function changeID(e:any){
-    pointsData[modyfyPonts].id=e.target.value;
+  const [status, setStatus] = useState('');//update status of the server
+
+  function onSubmit(e:any){
+    e.preventDefault();
+    pointsData[modyfyPonts].id=e.target.id.value;
+    pointsData[modyfyPonts].text=e.target.text.value;
     setPointsData([...pointsData]);
     fetch('http://localhost:3001/api/newID',{
       method: 'POST',
@@ -44,10 +48,10 @@ const MainArea = ({trasparency,padding=10,radius,showModify,heightInPercent,poin
       headers: {
         'Content-Type': 'application/json', // Set the content type header
       },
-      body: JSON.stringify({ id: e.target.value})//min to ms
+      body: JSON.stringify({ id: e.target.id.value, name:e.target.text.value})//min to ms
     })
       .then(response => response.json())
-      .then(json => console.log(json))
+      .then(json => {if (json.status!=200) {setStatus(json.data)}})
       .catch(error => console.error(error));
   }
   const BackgroundImage = () => {
@@ -79,9 +83,20 @@ const MainArea = ({trasparency,padding=10,radius,showModify,heightInPercent,poin
           <Button as="a" variant="danger" onClick={removePoint}>remove point</Button>
           <Button as="a" variant="success" onClick={addPoint}>add point</Button>
           update id:
-          <Form>
-            
-            <Form.Control type="number" onChange={(e)=>{changeID(e)}} placeholder= {'' + pointsData[modyfyPonts].id}/>
+          <Form onSubmit={onSubmit}>
+            <label>
+            <Form.Control type="number" name="id" placeholder= {'' + pointsData[modyfyPonts].id}/>
+            </label>
+            Update text:
+            <label>
+            <Form.Control type="text" name="text" placeholder= {'' + pointsData[modyfyPonts].text}/>
+            </label>
+            <label>
+            <Form.Text className="text-muted">
+              {status}
+            </Form.Text>
+            </label>
+            <button type="submit">Submit</button>
           </Form>
           <Button as="a" variant="warning" onClick={()=>{setModyfyPonts(-1)}}>Back</Button>
           </>
