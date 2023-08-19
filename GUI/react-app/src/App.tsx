@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { SetStateAction, useEffect, useRef, useState } from "react";
 import MainArea from "./components/MainArea"
 import Modify from "./components/Modify"
 import History from "./components/History"
 import { Button, Stack } from "react-bootstrap";
 import Settings from "./components/Settings";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
+
 function App() {
+  
   //const [selectedFloor, setSelectedFloor] = useState(0);
   const [selectedFloor, setSelectedFloor] = useState(() => {
     const storedSelectedFloor = localStorage.getItem('selectedFloor');
@@ -143,7 +146,7 @@ function App() {
 
   function onUpdateFrequency(e:any){
     //send to api
-    fetch('http://pi.local:3001/api/freq',{
+    fetch('http://localhost:3001/api/freq',{ //pi.local !!!!!!!!!!!!!!!!!!!!!!!!
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -157,7 +160,51 @@ function App() {
     setUpdateFreq(e);
     
   }
+  //realtime data
+  const minTemp=-10;
+  const minHue=85;
 
+  const maxTemp=100;
+  const maxHue=0;
+  var oldtemp=0;
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchEventSource(`http://localhost:3001/subscribe`, { //pi.local !!!!!!!!!!!!!!!!!!!!!!!!
+        method: "GET",
+        headers: {
+          Accept: "text/event-stream",
+        },
+        onmessage(event) {
+          const parsedData = JSON.parse(event.data);
+          if(parsedData.idLora!=0){
+            //update colors
+            allData.forEach((floor:any) => {
+              floor.data.forEach((shape:any) => {
+                
+                if(shape.id==parsedData.idLora){
+                  
+                  if(parsedData.temp!=oldtemp){
+                    shape.color=`hsl(${minHue+(maxHue-minHue)*(parsedData.temp-minTemp)/(maxTemp-minTemp)},100%,50%)`;
+                    oldtemp=parsedData.temp;
+                  }
+                  
+                }
+              });
+            });
+            setallData([...allData]);
+          }
+        },
+        onclose() {
+          console.log("Connection closed by the server");
+        },
+        onerror(err) {
+          console.log("There was an error from server", err);
+        },
+      });
+    };
+    fetchData();
+  }, []);
+    
   return (
     <>
     <Button onClick={()=>{showSettings?setShowSettings(false):setShowSettings(true)}} style={{position:"absolute",zIndex:100,padding:10,right: "0"}} size="lg" variant="info"><img src="src/assets/settings.svg" height={30}/></Button>

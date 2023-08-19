@@ -42,7 +42,7 @@ const MainArea = ({trasparency,padding=10,radius,showModify,heightInPercent,poin
     pointsData[modyfyPonts].id=e.target.id.value;
     pointsData[modyfyPonts].text=e.target.text.value;
     setPointsData([...pointsData]);
-    fetch('http://pi.local:3001/api/newID',{
+    fetch('http://localhost:3001/api/newID',{//pi.local !!!!!!!!!!!!!!!!!!!!!!!!
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -96,7 +96,9 @@ const MainArea = ({trasparency,padding=10,radius,showModify,heightInPercent,poin
               {status}
             </Form.Text>
             </label>
-            <button type="submit">Submit</button>
+            <label>
+              <button type="submit">Submit</button>
+            </label>
           </Form>
           <Button as="a" variant="warning" onClick={()=>{setModyfyPonts(-1)}}>Back</Button>
           </>
