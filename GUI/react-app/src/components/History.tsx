@@ -10,6 +10,9 @@ interface Props {
 const History = ({heightInPercent,id}:Props) => {
     const[pointsData,setPointsData]=useState([{}]);
     function onClick(e:any){ //TODO send request to server
+        if (e.target.value=="show all submit") {
+            id=-1;
+        }
         e.preventDefault();
         const from = (document.querySelector('input[name="from"]') as HTMLInputElement).value;
         const to = (document.querySelector('input[name="to"]') as HTMLInputElement).value;
@@ -39,6 +42,7 @@ const History = ({heightInPercent,id}:Props) => {
             <Form.Control style={{flex:1}} type="datetime-local" name="from" placeholder="Select from" />
             <Form.Control style={{flex:1}} type="datetime-local" name="to" placeholder="Select to" />
             <Form.Control style={{flex:1}} type="submit" onClick={onClick} value="Submit" />
+            <Form.Control style={{flex:1}} type="submit" onClick={onClick} value="show all submit" />
         </Form.Group>
         <LineChart width={window.innerWidth} height={(window.innerHeight*heightInPercent)/100} data={pointsData}>
             <Line type="monotone" dataKey="tem" stroke="red" />

@@ -156,6 +156,7 @@ app.use((req, res, next) => {
     next();
 });
 //server side event
+var client;
 app.get('/subscribe', (req, res) => {
     console.log('New client connected!');
     res.writeHead(200, {
@@ -164,9 +165,10 @@ app.get('/subscribe', (req, res) => {
 		'Cache-Control': 'no-cache',
     });
     // Send a subsequent message every five seconds
-    setInterval(() => {
+    if(client) clearInterval(client);
+    client= setInterval(() => {
         for(var i=0;i<allShapes.length;i++){
-            //console.log(allShapes[i]);
+            console.log("Update GUI");
             res.write(`data: ${JSON.stringify(allShapes[i])}`);
             res.write('\n\n');
         }

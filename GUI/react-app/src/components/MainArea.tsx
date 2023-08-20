@@ -56,15 +56,24 @@ const MainArea = ({trasparency,padding=10,radius,showModify,heightInPercent,poin
   }
   const BackgroundImage = () => {
     const [image] = useImage(imageData);
-    //console.log(image);
     if (image!=null) {
       let a=(window.innerHeight*heightInPercent)/100;
-      return <Image  image={image} height={a} width={(heightInPercent*image.width)/100}/>;
+      return <Image  image={image} width={image?.width} height={image?.height}/>;
     };
     
     return <Image image={image}/>;
 
   };
+  
+  const [scale, setScale] = useState(0);
+  const [Fscale, setFscale] = useState({x:0,y:0});
+  const handleWheel = (e:any) => {
+    e.evt.preventDefault();
+    const newScale = scale - e.evt.deltaY * 0.001;
+    setScale(Math.max(0.1, newScale));
+    setFscale({x:scale,y:scale});
+  };
+
   return (
     <>
       <Stack direction="horizontal" gap={2}>
@@ -111,7 +120,7 @@ const MainArea = ({trasparency,padding=10,radius,showModify,heightInPercent,poin
         }
       </Stack>
       <hr/>
-      <Stage width={window.innerWidth} height={(window.innerHeight*heightInPercent)/100}>
+      <Stage width={window.innerWidth} height={(window.innerHeight*heightInPercent)/100} scale={Fscale} draggable onWheel={handleWheel}>
         <Layer>
           <BackgroundImage />
         </Layer>
@@ -119,6 +128,7 @@ const MainArea = ({trasparency,padding=10,radius,showModify,heightInPercent,poin
           <Shape onClickShape={()=>{onCliskShape(array.id)}} pointsData={array.points} key={index} color={array.color} modyfyPonts={modyfyPonts==index} onModify={(a)=>{array.points=a}} trasparency={trasparency} padding={padding} radius={radius}/>
         ))
         }
+        
         
       </Stage>
       

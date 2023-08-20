@@ -24,7 +24,7 @@ function App() {
   //const [updateFreq, setUpdateFreq] = useState(0);
   const [updateFreq, setUpdateFreq] = useState(() => {
     const storedUpdateFreq = localStorage.getItem('updateFreq');
-    return storedUpdateFreq ? parseInt(storedUpdateFreq) : 0;
+    return storedUpdateFreq ? parseInt(storedUpdateFreq) : 1;
   });
   useEffect(() => {
     localStorage.setItem('updateFreq', updateFreq.toString());
@@ -163,13 +163,10 @@ function App() {
     
   }
   //realtime data
-  const minTemp=-10;
-  const minHue=85;
-
-  const maxTemp=100;
-  const maxHue=0;
-  var oldtemp=0;
+  const [useTemp, setUseTemp] = useState(false);
   useEffect(() => {
+
+    console.log("useTemp changed")
     const fetchData = async () => {
       await fetchEventSource(`http://localhost:3001/subscribe`, { //pi.local !!!!!!!!!!!!!!!!!!!!!!!!
         method: "GET",
@@ -178,23 +175,29 @@ function App() {
         },
         onmessage(event) {
           const parsedData = JSON.parse(event.data);
-          if(parsedData.idLora!=0){
-            //update colors
-            allData.forEach((floor:any) => {
-              floor.data.forEach((shape:any) => {
-                
-                if(shape.id==parsedData.idLora){
-                  
-                  if(parsedData.temp!=oldtemp){
-                    shape.color=`hsl(${minHue+(maxHue-minHue)*(parsedData.temp-minTemp)/(maxTemp-minTemp)},100%,50%)`;
-                    oldtemp=parsedData.temp;
-                  }
-                  
+          allData.forEach((floor:any) => {
+            floor.data.forEach((shape:any) => {
+              if(shape.id==parsedData.idLora ){
+                console.log("updated shape color")
+                if(useTemp){
+                  const minTemp=-10;
+                  const minHue=85;
+                  const maxTemp=50;
+                  const maxHue=0;
+                  shape.color=`hsl(${minHue+(maxHue-minHue)*(parsedData.temp-minTemp)/(maxTemp-minTemp)},100%,50%)`;
                 }
-              });
+                else {
+                  const minHum=0;
+                  const minHue=129;
+                  const maxHum=100;
+                  const maxHue=214;
+                  shape.color=`hsl(${minHue+(maxHue-minHue)*(parsedData.humd-minHum)/(maxHum-minHum)},100%,50%)`;
+                }
+              }
             });
-            setallData([...allData]);
-          }
+          });
+          setallData([...allData]);
+          
         },
         onclose() {
           console.log("Connection closed by the server");
@@ -204,6 +207,7 @@ function App() {
         },
       });
     };
+    onUpdateFrequency(updateFreq);
     fetchData();
   }, []);
     
@@ -218,7 +222,7 @@ function App() {
       <Modify showModify={showModify} allData={allData} onSelectedFloor={(e)=>{setModyfyPonts(-1),setSelectedFloor(e)}} onAddFloor={onAddFloor} onAddBackground={onAddBackground} onRemoveFloor={onRemoveFloor}/>
       <label>selected floor: <b>{allData[selectedFloor].floor!=-1 && allData[selectedFloor].floor}</b></label>
     </Stack>
-    
+
     <MainArea radius={radius} trasparency={trasparency} showModify={showModify} heightInPercent={showHistory?55:75 } onCliskShape={(e)=>{onClickShape(e)}} modyfyPonts={modifyPonts} setModyfyPonts={(e)=>setModyfyPonts(e)} pointsData={allData[selectedFloor].data } setPointsData={(e)=>updateData(e)} imageData={allData[selectedFloor].image}/>
     <div>
       {showHistory && <History heightInPercent={20} id={addIdhistory}/>}
