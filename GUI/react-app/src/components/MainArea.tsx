@@ -59,7 +59,7 @@ const MainArea = ({trasparency,padding=10,radius,showModify,heightInPercent,poin
     //console.log(image);
     if (image!=null) {
       let a=(window.innerHeight*heightInPercent)/100;
-      return <Image  image={image} height={a} width={(heightInPercent*image?.width)/100}/>;
+      return <Image  image={image} height={a} width={(heightInPercent*image.width)/100}/>;
     };
     
     return <Image image={image}/>;

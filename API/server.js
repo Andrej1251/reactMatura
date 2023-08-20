@@ -186,8 +186,18 @@ app.post('/api/freq', (req, res) => {
 });
 app.post('/api/history', (req, res) => {
     try{
+        var selectLoraQuery;
+        if(req.body.id==-1) selectLoraQuery= 'SELECT * FROM val WHERE datetime BETWEEN "'+req.body.from+'" AND "'+req.body.to+'"';   
+        else selectLoraQuery= 'SELECT * FROM val WHERE datetime BETWEEN "'+req.body.from+'" AND "'+req.body.to+'" AND humTempFK='+req.body.id;
+        connection.query(selectLoraQuery, (err, result) => {
+            if (err) {
+                console.error('Error selecting history:', err);
+                res.status(500).json({data:'Failed to select history: '+err});
+            } else {
+                res.status(200).json({data:result});
+            }
+        });
         
-        res.status(200).json({data:'Updated history'});
     }catch(e){
         res.status(500).json({data:'Failed to update history: '+e});
     }

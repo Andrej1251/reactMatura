@@ -96,7 +96,7 @@ function App() {
       ]
     },
   ];*/
-  const allHistoryStatic = [{name: 'Pont 1', temp: 400, hum: 2400},{name: 'Pont 1', temp: 800, hum: 200},{name: 'Pont 1', temp: 200, hum: 100}];
+  
 
   //const [allData, setallData] = useState([{floor:-1,image:"",data:[]}]);//[{floor:-1,image:"",data:[]}]);
   const [allData, setallData] = useState(() => {
@@ -109,8 +109,10 @@ function App() {
     localStorage.setItem('allData', JSON.stringify(allData));
   }, [allData]);
 
+  const [addIdhistory, setAddIdhistory] = useState(-1);
   function onClickShape(id:any){//TODO open history for that id
-    console.log(id);
+    setShowHistory(true);
+    setAddIdhistory(id);
   }
   function updateData(e:any){
     allData[selectedFloor].data=e;
@@ -219,7 +221,7 @@ function App() {
     
     <MainArea radius={radius} trasparency={trasparency} showModify={showModify} heightInPercent={showHistory?55:75 } onCliskShape={(e)=>{onClickShape(e)}} modyfyPonts={modifyPonts} setModyfyPonts={(e)=>setModyfyPonts(e)} pointsData={allData[selectedFloor].data } setPointsData={(e)=>updateData(e)} imageData={allData[selectedFloor].image}/>
     <div>
-      {showHistory && <History heightInPercent={20} data={allHistoryStatic}/>}
+      {showHistory && <History heightInPercent={20} id={addIdhistory}/>}
     </div>
     </>
   )
