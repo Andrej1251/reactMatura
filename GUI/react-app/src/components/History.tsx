@@ -19,7 +19,7 @@ const History = ({heightInPercent,id}:Props) => {
         if (from && to) {
             console.log(id);
             //send request to server
-            fetch('http://localhost:3001/api/history',{ //pi.local !!!!!!!!!!!!!!!!!!!!!!!!
+            fetch('http://pi.local:3001/api/history',{ //pi.local !!!!!!!!!!!!!!!!!!!!!!!!
             method: 'POST',
             mode: 'cors',
             headers: {

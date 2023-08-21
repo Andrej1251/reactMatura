@@ -42,7 +42,7 @@ const MainArea = ({trasparency,padding=10,radius,showModify,heightInPercent,poin
     pointsData[modyfyPonts].id=e.target.id.value;
     pointsData[modyfyPonts].text=e.target.text.value;
     setPointsData([...pointsData]);
-    fetch('http://localhost:3001/api/newID',{//pi.local !!!!!!!!!!!!!!!!!!!!!!!!
+    fetch('http://pi.local:3001/api/newID',{//pi.local !!!!!!!!!!!!!!!!!!!!!!!!
       method: 'POST',
       mode: 'cors',
       headers: {

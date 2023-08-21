@@ -1,8 +1,10 @@
 const express = require('express');
 const moment = require('moment');
+const { exec } = require("child_process");
 
 // Create a connection to the MySQL server
 const mysql = require('mysql');
+const { log } = require('console');
 const connection = mysql.createConnection({
     host: '127.0.0.1',
     user: 'root',
@@ -119,24 +121,44 @@ function updateFreq(updateF,res){
                 } else {
                     for(var i=0;i<result.length;i++){
                         //get random values for now RUN LORA in reality
-                        var tem = Math.random() * (40 - 20) + 20;
-                        var hum = Math.random() * (100 - 0) + 0;
-                        var datetime = moment().format('YYYY-MM-DD HH:mm:ss');
-                        //insert into table val
-                        const insertValQuery = `INSERT INTO val (tem,hum,datetime,humTempFK) VALUES (${tem},${hum},"${datetime}",${result[i].idLora})`;
-                        var b={};
-                        b.idLora=result[i].idLora;
-                        b.temp=tem;
-                        b.humd=hum;
-                        b.datetime=datetime;
-                        connection.query(insertValQuery, (err, result) => {
-                            if (err) {
-                                console.error('Error inserting new value:', err);
-                            } 
+                        exec("python3 lora.py "+result[i].idLora, (error, stdout, stderr) => {
+                            if (error) {
+                                console.log(`error: ${error.message}`);
+                                return;
+                            }
+                            if (stderr) {
+                                console.log(`stderr: ${stderr}`);
+                                return;
+                            }
+                            //console.log(`stdout: ${stdout}`);
+                            if(stdout==""){
+                                console.log("No data")
+                                return;
+                            }
+                            var temHum = stdout.split(" ");
+                            console.log(temHum);
+                            if(i>=result.length)i=result.length-1; //WTF
+
+                            var tem = temHum[1];//Math.random() * (40 - 20) + 20;
+                            var hum = temHum[2];//Math.random() * (100 - 0) + 0;
+                            var datetime = moment().format('YYYY-MM-DD HH:mm:ss');
+                            //insert into table val
+                            const insertValQuery = `INSERT INTO val (tem,hum,datetime,humTempFK) VALUES (${tem},${hum},"${datetime}",${result[i].idLora})`;
+                            var b={};
+                            b.idLora=result[i].idLora;
+                            b.temp=tem;
+                            b.humd=hum;
+                            b.datetime=datetime;
+                            connection.query(insertValQuery, (err, result) => {
+                                if (err) {
+                                    console.error('Error inserting new value:', err);
+                                } 
+                            });
+                            
+                            allShapes.push(b);
                         });
-                        allShapes.push(b);
-                        //console.log("=====================================")
                     }
+                
                 }
                 
             });

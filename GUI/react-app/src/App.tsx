@@ -134,7 +134,7 @@ function App() {
 
   function onUpdateFrequency(e:any){
     //send to api
-    fetch('http://localhost:3001/api/freq',{ //pi.local !!!!!!!!!!!!!!!!!!!!!!!!
+    fetch('http://pi.local:3001/api/freq',{ //pi.local !!!!!!!!!!!!!!!!!!!!!!!!
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -155,7 +155,7 @@ function App() {
 
     console.log("useTemp changed")
     const fetchData = async () => {
-      await fetchEventSource(`http://localhost:3001/subscribe`, { //pi.local !!!!!!!!!!!!!!!!!!!!!!!!
+      await fetchEventSource(`http://pi.local:3001/subscribe`, { //pi.local !!!!!!!!!!!!!!!!!!!!!!!!
         method: "GET",
         headers: {
           Accept: "text/event-stream",
