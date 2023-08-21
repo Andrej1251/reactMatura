@@ -5,8 +5,18 @@ import History from "./components/History"
 import { Button, Stack } from "react-bootstrap";
 import Settings from "./components/Settings";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
+import Info from "./components/Info";
 
 function App() {
+  //const [useTemp, setUseTemp] = useState(false);
+  const [useTemp, setUseTemp] = useState(() => {
+    const storedUseTemp = localStorage.getItem('useTemp');
+    return storedUseTemp ? JSON.parse(storedUseTemp) : false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('useTemp', JSON.stringify(useTemp));
+  }, [useTemp]);
   
   //const [selectedFloor, setSelectedFloor] = useState(0);
   const [selectedFloor, setSelectedFloor] = useState(() => {
@@ -72,31 +82,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
-  /*const allDataStatic = [
-    {floor:1,
-    image: "",
-    data:[
-      { id:1,
-        color: 'red',
-        points: [0,0,110,220,180,22,100,0]},
-      { id:2,
-        color: 'gray',
-        points: [200,10,210,120,280,320,330,110]},
-      ]
-    },
-    {floor:2,
-    image: "",
-    data:[
-      { id:3,
-        color: 'blue',
-        points: [0,10,100,420,180,22,100,0]},
-      { id:4,
-        color: 'orange',
-        points: [200,10,214,420,380,620,330,110]},
-      ]
-    },
-  ];*/
-  
+
 
   //const [allData, setallData] = useState([{floor:-1,image:"",data:[]}]);//[{floor:-1,image:"",data:[]}]);
   const [allData, setallData] = useState(() => {
@@ -163,7 +149,8 @@ function App() {
     
   }
   //realtime data
-  const [useTemp, setUseTemp] = useState(false);
+  
+  const [tempHumData, setTempHumData] = useState<any>([]);
   useEffect(() => {
 
     console.log("useTemp changed")
@@ -175,10 +162,17 @@ function App() {
         },
         onmessage(event) {
           const parsedData = JSON.parse(event.data);
+          
           allData.forEach((floor:any) => {
             floor.data.forEach((shape:any) => {
               if(shape.id==parsedData.idLora ){
                 console.log("updated shape color")
+                tempHumData.push(parsedData);
+                setTempHumData([...tempHumData]);
+                if(tempHumData.length>20){
+                  tempHumData.shift();
+                  setTempHumData([...tempHumData]);
+                }
                 if(useTemp){
                   const minTemp=-10;
                   const minHue=85;
@@ -209,21 +203,26 @@ function App() {
     };
     onUpdateFrequency(updateFreq);
     fetchData();
-  }, []);
+  }, [useTemp]);
     
   return (
     <>
+    
     <Button onClick={()=>{showSettings?setShowSettings(false):setShowSettings(true)}} style={{position:"absolute",zIndex:100,padding:10,right: "0"}} size="lg" variant="info"><img src="src/assets/settings.svg" height={30}/></Button>
     <Settings onUpdateFrequency={(e)=>onUpdateFrequency(e)} updateFreq={updateFreq} showHistory={showHistory} showModify={showModify} trasparency={trasparency} radius={radius} showSettings={showSettings} onShowHistory={setShowHistory} onRadiusChange={setRadius} onShowModify={setShowModify} onTrasparencyChange={setTrasparency}/>
 
     <Stack direction="horizontal" gap={2} style={{margin:10}}>
       <h1>App</h1>
       <input style={{display: 'none'}} ref={inputRef} type="file" onChange={handleFileChange}/>
-      <Modify showModify={showModify} allData={allData} onSelectedFloor={(e)=>{setModyfyPonts(-1),setSelectedFloor(e)}} onAddFloor={onAddFloor} onAddBackground={onAddBackground} onRemoveFloor={onRemoveFloor}/>
+      <Modify onShowHumTemp={()=>{useTemp?setUseTemp(false):setUseTemp(true)}} showHumTemp={useTemp} showModify={showModify} allData={allData} onSelectedFloor={(e)=>{setModyfyPonts(-1),setSelectedFloor(e)}} onAddFloor={onAddFloor} onAddBackground={onAddBackground} onRemoveFloor={onRemoveFloor}/>
       <label>selected floor: <b>{allData[selectedFloor].floor!=-1 && allData[selectedFloor].floor}</b></label>
     </Stack>
-
+    <div style={{float:"right", width:"20%"}}>
+    <Info tempHumData={tempHumData}/>
+    </div>
     <MainArea radius={radius} trasparency={trasparency} showModify={showModify} heightInPercent={showHistory?55:75 } onCliskShape={(e)=>{onClickShape(e)}} modyfyPonts={modifyPonts} setModyfyPonts={(e)=>setModyfyPonts(e)} pointsData={allData[selectedFloor].data } setPointsData={(e)=>updateData(e)} imageData={allData[selectedFloor].image}/>
+    
+    
     <div>
       {showHistory && <History heightInPercent={20} id={addIdhistory}/>}
     </div>

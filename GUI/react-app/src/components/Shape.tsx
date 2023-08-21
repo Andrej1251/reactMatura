@@ -25,7 +25,7 @@ const Shape = ({pointsData,color,modyfyPonts,trasparency,onModify, onClickShape,
   return (
     <>
       <Layer>
-          {modyfyPonts ?<Line x={padding} y={padding} points={points} onClick={()=>{onClickShape}} stroke={"black"} closed fill={color} />:<Line x={padding} y={padding} points={points} stroke={color} onClick={()=>{onClickShape(pointsData)}} opacity={trasparency} closed fill={color} />}
+          {modyfyPonts ?<Line x={padding} y={padding} points={points} onClick={()=>{onClickShape}} stroke={"black"} closed fill={color} />:<Line x={padding} y={padding} points={points} stroke={color} onClick={()=>{onClickShape()}} opacity={trasparency} closed fill={color} />}
       </Layer>
       <Layer>
       {modyfyPonts && 
