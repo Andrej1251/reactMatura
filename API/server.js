@@ -63,6 +63,7 @@ connection.connect((err) => {
         }
     });   
     
+    
     // Create the first table
     const createLoraQuery = `
         CREATE TABLE lora (
@@ -97,13 +98,24 @@ connection.connect((err) => {
             console.log('Table val created');
         }
     });
-});*/
-
+});
+*/
 
 // Create a new Express application
 const app = express();
 var allShapes = [];
-
+function os_func() {
+    this.execCommand = function(cmd, callback) {
+        exec(cmd, (error, stdout, stderr) => {
+            if (error) {return;}
+            if (stderr) {return;}
+            if(stdout==""){return;}
+            //if(i>=result.length)i=result.length-1; //WTF
+            callback(stdout)
+            
+        });
+    }
+}
 
 var intervalStop;
 function updateFreq(updateF,res){
@@ -121,31 +133,22 @@ function updateFreq(updateF,res){
                 } else {
                     for(var i=0;i<result.length;i++){
                         //get random values for now RUN LORA in reality
-                        exec("python3 lora.py "+result[i].idLora, (error, stdout, stderr) => {
-                            if (error) {
-                                console.log(`error: ${error.message}`);
-                                return;
-                            }
-                            if (stderr) {
-                                console.log(`stderr: ${stderr}`);
-                                return;
-                            }
-                            //console.log(`stdout: ${stdout}`);
-                            if(stdout==""){
-                                console.log("No data")
-                                return;
-                            }
+                        
+                        var os = new os_func();
+                        os.execCommand("python3 lora.py -P "+result[i].idLora, function (stdout) {
+                            // Here you can get the return value
                             var temHum = stdout.split(" ");
-                            console.log(temHum);
-                            if(i>=result.length)i=result.length-1; //WTF
-
-                            var tem = temHum[1];//Math.random() * (40 - 20) + 20;
-                            var hum = temHum[2];//Math.random() * (100 - 0) + 0;
+                            var id =temHum[0][2];
+                            var hum = temHum[1];//Math.random() * (40 - 20) + 20;
+                            var tem = temHum[2];//Math.random() * (100 - 0) + 0;
+                            if (tem===undefined|| hum===undefined)
+                                return;
+                            console.log("temp: "+tem+" hum: "+hum+" id: "+id)
                             var datetime = moment().format('YYYY-MM-DD HH:mm:ss');
                             //insert into table val
-                            const insertValQuery = `INSERT INTO val (tem,hum,datetime,humTempFK) VALUES (${tem},${hum},"${datetime}",${result[i].idLora})`;
+                            const insertValQuery = `INSERT INTO val (tem,hum,datetime,humTempFK) VALUES (${tem},${hum},"${datetime}",${id})`;
                             var b={};
-                            b.idLora=result[i].idLora;
+                            b.idLora=id;
                             b.temp=tem;
                             b.humd=hum;
                             b.datetime=datetime;
@@ -157,6 +160,8 @@ function updateFreq(updateF,res){
                             
                             allShapes.push(b);
                         });
+                        /**/
+                        
                     }
                 
                 }
