@@ -1,6 +1,7 @@
 const express = require('express');
 const moment = require('moment');
-const { exec } = require("child_process");
+const shell = require('shelljs');
+
 
 // Create a connection to the MySQL server
 const mysql = require('mysql');
@@ -100,24 +101,36 @@ connection.connect((err) => {
     });
 });
 */
+function check(stdout){
+    var temHum = stdout.split(" ");
+    var id =temHum[0][2];
+    var hum = temHum[1];//Math.random() * (40 - 20) + 20;
+    var tem = temHum[2];//Math.random() * (100 - 0) + 0;
+    if (tem===undefined|| hum===undefined)
+        return;
+    console.log("temp: "+tem+" hum: "+hum+" id: "+id)
+    var datetime = moment().format('YYYY-MM-DD HH:mm:ss');
+    //insert into table val
+    const insertValQuery = `INSERT INTO val (tem,hum,datetime,humTempFK) VALUES (${tem},${hum},"${datetime}",${id})`;
+    var b={};
+    b.idLora=id;
+    b.temp=tem;
+    b.humd=hum;
+    b.datetime=datetime;
+    
+    connection.query(insertValQuery, (err, result) => {
+        if (err) {
+            console.error('Error inserting new value:', err);
+        } 
+    });
+    allShapes.push(b);
+}
 
 // Create a new Express application
 const app = express();
 var allShapes = [];
-function os_func() {
-    this.execCommand = function(cmd, callback) {
-        exec(cmd, (error, stdout, stderr) => {
-            if (error) {return;}
-            if (stderr) {return;}
-            if(stdout==""){return;}
-            //if(i>=result.length)i=result.length-1; //WTF
-            callback(stdout)
-            
-        });
-    }
-}
-
 var intervalStop;
+
 function updateFreq(updateF,res){
     if(updateF!=0){
         if(intervalStop){
@@ -127,45 +140,14 @@ function updateFreq(updateF,res){
             //go to db end get lora idLora
             const selectLoraQuery = 'SELECT idLora FROM lora';
             connection.query(selectLoraQuery, (err, result) => {
-                
                 if (err) {
                     console.error('Error selecting lora:', err);
                 } else {
-                    for(var i=0;i<result.length;i++){
-                        //get random values for now RUN LORA in reality
-                        
-                        var os = new os_func();
-                        os.execCommand("python3 lora.py -P "+result[i].idLora, function (stdout) {
-                            // Here you can get the return value
-                            var temHum = stdout.split(" ");
-                            var id =temHum[0][2];
-                            var hum = temHum[1];//Math.random() * (40 - 20) + 20;
-                            var tem = temHum[2];//Math.random() * (100 - 0) + 0;
-                            if (tem===undefined|| hum===undefined)
-                                return;
-                            console.log("temp: "+tem+" hum: "+hum+" id: "+id)
-                            var datetime = moment().format('YYYY-MM-DD HH:mm:ss');
-                            //insert into table val
-                            const insertValQuery = `INSERT INTO val (tem,hum,datetime,humTempFK) VALUES (${tem},${hum},"${datetime}",${id})`;
-                            var b={};
-                            b.idLora=id;
-                            b.temp=tem;
-                            b.humd=hum;
-                            b.datetime=datetime;
-                            connection.query(insertValQuery, (err, result) => {
-                                if (err) {
-                                    console.error('Error inserting new value:', err);
-                                } 
-                            });
-                            
-                            allShapes.push(b);
-                        });
-                        /**/
-                        
-                    }
-                
+                    result.forEach(data => {
+                        const result2 = shell.exec('python lora.py -P '+data.idLora);
+                        check(result2)
+                    });
                 }
-                
             });
         }, updateF);
     }

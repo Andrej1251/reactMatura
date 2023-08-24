@@ -18,9 +18,9 @@ class LoRaBeacon(LoRa):
         super(LoRaBeacon, self).__init__(verbose)
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([1,0,0,0,0,0])
-        self.var=0
 
     def on_tx_done(self):
+        global args
         self.clear_irq_flags(RxDone=1)
         payload = self.read_payload(nocheck=True)
         start_time = time.time()
@@ -28,26 +28,23 @@ class LoRaBeacon(LoRa):
              self.clear_irq_flags(RxDone=1)
              payload = self.read_payload(nocheck=True)
              if (time.time() - start_time > 10): # wait until receive data or 10s
+                    payload=("f("+str(args.put)+") fail").encode("utf-8")
                     break
         print(bytes(payload).decode("utf-8",'ignore')) # Receive DATA
-        self.var=1
         sys.exit(0)
     def start(self):
         global args
-        while (self.var==0):
-            #print(48+args.put)
-            self.write_payload([48+args.put]) # Send INF
-            self.set_mode(MODE.TX)
-            time.sleep(3) # there must be a better solution but sleep() works
-            self.reset_ptr_rx()
-            self.set_mode(MODE.RXCONT) # Receiver mode
-            start_time = time.time()
-            while (time.time() - start_time < 10): # wait until receive data or 10s
-                pass;
-        self.var=0
+        self.write_payload([48+args.put]) # Send INF
+        self.set_mode(MODE.TX)
+        time.sleep(3) # there must be a better solution but sleep() works
         self.reset_ptr_rx()
         self.set_mode(MODE.RXCONT) # Receiver mode
-        time.sleep(1)
+        start_time = time.time()
+        while (time.time() - start_time < 10): # wait until receive data or 10s
+            pass;
+        #self.reset_ptr_rx()
+        #self.set_mode(MODE.RXCONT) # Receiver mode
+
 lora = LoRaBeacon(verbose=False)
 args = parser.parse_args(lora)
 
@@ -74,5 +71,6 @@ except KeyboardInterrupt:
     sys.stderr.write("KeyboardInterrupt\n")
 finally:
     sys.stdout.flush()
+    GPIO.cleanup()
     lora.set_mode(MODE.SLEEP)
     BOARD.teardown()
