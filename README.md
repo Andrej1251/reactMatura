@@ -3,6 +3,7 @@
 - on Raspberry Pi install mariaDB and node.js
 - setup user "root" password "root" on mariadb.
 - install pyLora libary on python (pip)
+- install ShellJS in server(npm i shelljs)
 - git clone my repo
 - uncommit code API/server.js line 30-103
 - commit code API/server.js 14-30

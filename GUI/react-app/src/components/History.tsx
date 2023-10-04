@@ -47,8 +47,8 @@ const History = ({heightInPercent,id}:Props) => {
         <LineChart width={window.innerWidth} height={(window.innerHeight*heightInPercent)/100} data={pointsData}>
             <Line type="monotone" dataKey="tem" stroke="red" />
             <Line type="monotone" dataKey="hum" stroke="blue" />
-            <CartesianGrid stroke="#ccc" />
-            <XAxis dataKey="name" />
+            <CartesianGrid stroke="#ccc"/>
+            <XAxis dataKey="datetime"/>
             <YAxis />
         </LineChart>
         
